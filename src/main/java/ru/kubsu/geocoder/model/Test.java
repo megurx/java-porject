@@ -10,7 +10,7 @@ public class Test {
     private Integer id;
     @Column(name="STUDENT_NAME", length=50, nullable=false, unique=true)
     private String name;
-    private Boolean done;
+    private Boolean done = false;
     @Enumerated(EnumType.STRING)
     private Mark mark;
 

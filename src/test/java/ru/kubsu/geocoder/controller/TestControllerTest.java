@@ -1,12 +1,31 @@
 package ru.kubsu.geocoder.controller;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import ru.kubsu.geocoder.dto.RestApiError;
 import ru.kubsu.geocoder.util.TestUtil;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class TestControllerTest {
 
+    @LocalServerPort
+    Integer port;
+
+    private final TestRestTemplate testRestTemplate = new TestRestTemplate();
 
     @BeforeAll
     static void beforeAll() {
@@ -34,13 +53,49 @@ class TestControllerTest {
     }
 
     @Test
-    void test2() {
-        assertEquals(4,2 + 2);
+    void unitTest() {
+
     }
 
     @Test
-    void test3() {
-        System.out.println("test2");
+    void integrationTest() {
+        ResponseEntity<ru.kubsu.geocoder.model.Test> response = testRestTemplate.
+                getForEntity(
+                        "http://localhost:"+ port +"/tests/1?name=test", ru.kubsu.geocoder.model.Test.class);
+
+        final ru.kubsu.geocoder.model.Test body = response.getBody();
+
+        assertEquals(1,body.getId());
+        assertEquals("test",body.getName());
+        assertEquals(false, body.getDone());
+        assertEquals(null, body.getMark());
+    }
+
+    @Test
+    void integrationTestWhenNameIsNull() {
+        ResponseEntity<String> response = testRestTemplate.
+                getForEntity(
+                        "http://localhost:"+ port +"/tests/1",
+                        String.class);
+        assertEquals(HttpStatus.BAD_REQUEST,response.getStatusCode());
+        final String body = response.getBody();
+        System.out.println(body);
+    }
+
+    @Test
+    void integrationTestWhenIdIsString() {
+        ResponseEntity<RestApiError> response = testRestTemplate.
+                exchange(
+                        "http://localhost:"+ port +"/tests/abc?name=test",
+                        HttpMethod.GET,null, RestApiError.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST,response.getStatusCode());
+
+        final RestApiError body = response.getBody();
+        assertEquals(400,body.getStatus());
+        assertEquals("Bad Request",body.getError());
+        assertEquals("/tests/abc",body.getPath());
+        System.out.println(body);
     }
 
     @AfterAll

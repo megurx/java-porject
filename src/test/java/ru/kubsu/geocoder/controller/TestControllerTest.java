@@ -1,7 +1,9 @@
 package ru.kubsu.geocoder.controller;
 
+import org.junit.Before;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -9,8 +11,11 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.event.annotation.BeforeTestMethod;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.kubsu.geocoder.dto.RestApiError;
+import ru.kubsu.geocoder.model.Mark;
+import ru.kubsu.geocoder.repository.TestRepository;
 import ru.kubsu.geocoder.util.TestUtil;
 
 import java.util.Map;
@@ -25,6 +30,11 @@ class TestControllerTest {
     @LocalServerPort
     Integer port;
 
+    @Autowired
+    TestRepository testRepository;
+
+    private TestRepository repository;
+
     private final TestRestTemplate testRestTemplate = new TestRestTemplate();
 
     @BeforeAll
@@ -33,18 +43,18 @@ class TestControllerTest {
     }
 
     @BeforeEach
-    void setUp() {
-        System.out.println("setUP");
-    }
+    public void setUp() {
+        ru.kubsu.geocoder.model.Test test = new ru.kubsu.geocoder.model.Test();
+        test.setName("megurx");
+        test.setId(1);
+        test.setDone(true);
+        test.setMark(Mark.A);
+        testRepository.save(test);
+      }
 
     @AfterEach
     void tearDown() {
         System.out.println("tearDown");
-
-    }
-
-    @Test
-    void unitTest() {
 
     }
 
@@ -89,7 +99,54 @@ class TestControllerTest {
         System.out.println(body);
     }
 
-    @AfterAll
+    @Test
+    void testSaveDatabase() {
+      ResponseEntity<Void> response = testRestTemplate.
+        getForEntity(
+          "http://localhost:"+ port +"/tests/save?name=testSave", Void.class);
+
+      assertEquals(HttpStatus.OK,response.getStatusCode());
+    }
+
+    @Test
+    void testSaveDatabaseFailed() {
+      ResponseEntity<Void> response = testRestTemplate.
+        getForEntity(
+          "http://localhost:"+ port +"/tests/save", Void.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST,response.getStatusCode());
+    }
+
+    @Test
+    void testLoadDatabase() {
+      ResponseEntity<ru.kubsu.geocoder.model.Test> response = testRestTemplate.
+        getForEntity(
+          "http://localhost:"+ port +"/tests/load/megurx", ru.kubsu.geocoder.model.Test.class);
+
+      final ru.kubsu.geocoder.model.Test body = response.getBody();
+
+      assertEquals(HttpStatus.OK,response.getStatusCode());
+      assertEquals("megurx",body.getName());
+      assertEquals(true, body.getDone());
+      assertEquals(Mark.A, body.getMark());
+      System.out.println(body);
+    }
+
+    @Test
+    void testLoadDatabaseFailed() {
+      ResponseEntity<ru.kubsu.geocoder.model.Test> response = testRestTemplate.
+        getForEntity(
+          "http://localhost:"+ port +"/tests/load/9999999999", ru.kubsu.geocoder.model.Test.class);
+
+      final ru.kubsu.geocoder.model.Test body = response.getBody();
+
+      assertEquals(HttpStatus.OK,response.getStatusCode());
+      assertEquals(null,body);
+      System.out.println(body);
+
+    }
+
+  @AfterAll
     static void afterAll() {
         System.out.println("afterAll");
     }

@@ -3,6 +3,8 @@ package ru.kubsu.geocoder.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import ru.kubsu.geocoder.client.NominatimClient;
+import ru.kubsu.geocoder.dto.NominatimPlace;
 import ru.kubsu.geocoder.model.Test;
 import ru.kubsu.geocoder.service.TestService;
 
@@ -12,11 +14,15 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping("tests")
 public class TestController {
     private TestService service;
+    private NominatimClient nominatimClient;
 
     @Autowired
-    public TestController(TestService service) {
-        this.service = service;
+    public TestController(TestService service, NominatimClient nominatimClient) {
+      this.nominatimClient = nominatimClient;
+      this.service = service;
     }
+
+
     // /tests/1?name=test
     @GetMapping(value="/{id}", produces = APPLICATION_JSON_VALUE)
     public Test getTest(@PathVariable Integer id,
@@ -34,4 +40,14 @@ public class TestController {
     public Test load(@PathVariable String name){
       return service.load(name);
     }
-}
+
+    @GetMapping(value="/status", produces = APPLICATION_JSON_VALUE)
+    public String test(){
+      return nominatimClient.search("кубгу","json").get(0).getType();
+    }
+    @GetMapping(value="/status1", produces = APPLICATION_JSON_VALUE)
+    public NominatimPlace test1(){
+      return nominatimClient.search("кубгу","json").get(0);
+    }
+  }
+

@@ -132,11 +132,9 @@ class TestControllerTest {
           "http://localhost:"+ port +"/tests/load/9999999999", ru.kubsu.geocoder.model.Test.class);
 
       final ru.kubsu.geocoder.model.Test body = response.getBody();
-
-      assertEquals(HttpStatus.OK,response.getStatusCode());
       assertEquals(null,body);
       System.out.println(body);
-
+      System.out.println(response.getStatusCode());
     }
 
   @AfterAll

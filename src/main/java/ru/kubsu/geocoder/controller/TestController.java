@@ -1,5 +1,6 @@
 package ru.kubsu.geocoder.controller;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,45 +19,36 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping("tests")
 public class TestController {
   private TestService service;
-  private NominatimClient nominatimClient;
+
 
   @Autowired
   public TestController(TestService service, NominatimClient nominatimClient) {
-    this.nominatimClient = nominatimClient;
     this.service = service;
   }
 
 
   // /tests/1?name=test
   @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
-  public Test getTest(@PathVariable Integer id,
-                      @RequestParam String name) {
+  public Test getTest(final @PathVariable Integer id,
+                      final @RequestParam String name) {
     return service.build(id, name);
   }
 
   // /tests/save?name=test
   @GetMapping(value = "/save", produces = APPLICATION_JSON_VALUE)
-  public void save(@RequestParam String name) {
+  public void save(final @RequestParam String name) {
     service.save(name);
   }
 
   // tests/load/test
   @GetMapping(value = "/load/{name}", produces = APPLICATION_JSON_VALUE)
-  public Test load(@PathVariable String name) {
+  public Test load(final @PathVariable String name) {
     return service.load(name);
   }
 
-  @GetMapping(value = "/search", produces = APPLICATION_JSON_VALUE)
-  public String search() {
-    return nominatimClient.search("кубгу", "json").get(0).getType();
-  }
-
-  @GetMapping(value = "/reverse", produces = APPLICATION_JSON_VALUE)
-  public NominatimPlace reverse() {
-    return nominatimClient.reverse(45.046580, 38.978289,"json");
-  }
-
   @GetMapping(value = "/status1", produces = APPLICATION_JSON_VALUE)
+  @SuppressWarnings("PWD.AvoidLiteralsInIfCondition")
+  @SuppressFBWarnings("DMI_RANDOM_USED_ONLY_ONCE")
   public ResponseEntity<Object> hello() {
     Random random = new Random();
     if (random.nextDouble() > 0.5) {
@@ -67,7 +59,6 @@ public class TestController {
           .body("qw");
 
     } else {
-      NominatimPlace place = new NominatimPlace();
       RestApiError error = new RestApiError();
       return
         ResponseEntity

@@ -24,4 +24,4 @@ jobs:
       uses: gradle/gradle-build-action@v2
       
     - name: Run build with 
-      uses: ./gradlew clean build test check
+      run: ./gradlew clean build test check

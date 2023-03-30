@@ -3,12 +3,15 @@ package ru.kubsu.geocoder.model;
 import javax.persistence.*;
 import java.util.Objects;
 
+/**
+ * javadoc.
+ */
 @Entity
 public class Test {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    @Column(name="STUDENT_NAME", length=50, nullable=false, unique=true)
+    @Column(name = "STUDENT_NAME", length = 50, nullable = false, unique = true)
     private String name;
     private Boolean done = false;
     @Enumerated(EnumType.STRING)
@@ -47,10 +50,14 @@ public class Test {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Test test = (Test) o;
+    public boolean equals(final Object o) {
+        if (this == o) {
+          return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+          return false;
+        }
+        final Test test = (Test) o;
         return Objects.equals(id, test.id)
                 && Objects.equals(name, test.name)
                 && Objects.equals(done, test.done)
@@ -64,11 +71,16 @@ public class Test {
 
     @Override
     public String toString() {
-        return "Test{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", done=" + done +
-                ", mark=" + mark +
+        return "Test{"
+          +
+                "id=" + id
+          +
+                ", name='" + name + '\''
+          +
+                ", done=" + done
+          +
+                ", mark=" + mark
+          +
                 '}';
     }
 }

@@ -1,6 +1,4 @@
 package ru.kubsu.geocoder.controller;
-
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,59 +17,71 @@ import ru.kubsu.geocoder.repository.AddressRepository;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class GeocoderControllerTest {
+
   @LocalServerPort
   Integer port;
-  private final TestRestTemplate testRestTemplate = new TestRestTemplate();
 
   @MockBean
   private NominatimClient nominatimClient;
 
   @Autowired
   private AddressRepository addressRepository;
-  @Test
+
+  private final TestRestTemplate testRestTemplate = new TestRestTemplate();
 
   @BeforeEach
-  void setUp(){
+  void setUp() {
     addressRepository.deleteAll();
   }
 
-  void searchWhenNominatimNotResponceTest() {
-    when(nominatimClient.search(anyString())).thenReturn(Optional.empty());
+  @Test
+  void search() {
+    final String query = "кубгу";
+    final Address testAddress = buildTestAddress(query);
+    when(nominatimClient.search(anyString()))
+      .thenReturn(Optional.of(buildTestPlace()));
+
     ResponseEntity<Address> response = testRestTemplate.
       getForEntity(
-        "http://localhost:"+ port +"/geocoder/search?address=кубгу", Address.class);
+        "http://localhost:" + port + "/geocoder/search?query=" + query,
+        Address.class);
 
-    assertEquals(HttpStatus.NOT_FOUND,response.getStatusCode());
-    assertNull(response.getBody());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
 
-  }
-
-  private static NominatimPlace buildTestPlace(){
-    return new NominatimPlace(45.046580, 38.978289,"123","123");
+    final Address body = response.getBody();
+    assertEquals(testAddress, body);
   }
 
   @Test
-  void searchWhenNominatimNotResponseTest1() {
-    final Address testAddress = buildTestAddress();
-    when(nominatimClient.search(anyString())).thenReturn(Optional.of(buildTestPlace()));
+  void searchWhenNominatimNotResponse() {
+    final String query = "кубгу";
+    when(nominatimClient.search(anyString()))
+      .thenReturn(Optional.empty());
+
     ResponseEntity<Address> response = testRestTemplate.
       getForEntity(
-        "http://localhost:"+ port +"/geocoder/search?address=кубгу", Address.class);
+        "http://localhost:" + port + "/geocoder/search?query=" + query,
+        Address.class);
 
-    assertEquals(HttpStatus.OK,response.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertNull(response.getBody());
+  }
 
-    final Address body = response.getBody();
-    assertEquals(testAddress,body);
+  private static NominatimPlace buildTestPlace() {
+    return new NominatimPlace(45.02036085, 39.03099994504268,
+      "Кубанский государственный университет, улица Димитрова, Карасунский округ, Краснодар, городской округ Краснодар, Краснодарский край, Южный федеральный округ, 350000, Россия",
+      "university");
+  }
 
-    }
-  private static Address buildTestAddress(){
-    return Address.of(buildTestPlace());
+  private static Address buildTestAddress(final String query) {
+    return Address.of(buildTestPlace(), query);
   }
 }

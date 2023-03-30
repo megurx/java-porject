@@ -5,9 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.kubsu.geocoder.client.NominatimClient;
-import ru.kubsu.geocoder.dto.NominatimPlace;
-import ru.kubsu.geocoder.dto.RestApiError;
+//import ru.kubsu.geocoder.client.NominatimClient;
 import ru.kubsu.geocoder.model.Test;
 import ru.kubsu.geocoder.service.TestService;
 
@@ -15,14 +13,17 @@ import java.util.Random;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+/**
+ * javadoc.
+ */
 @RestController
 @RequestMapping("tests")
 public class TestController {
-  private TestService service;
+  private final TestService service;
 
 
   @Autowired
-  public TestController(TestService service, NominatimClient nominatimClient) {
+  public TestController(final TestService service) {
     this.service = service;
   }
 
@@ -47,19 +48,16 @@ public class TestController {
   }
 
   @GetMapping(value = "/status1", produces = APPLICATION_JSON_VALUE)
-  @SuppressWarnings("PWD.AvoidLiteralsInIfCondition")
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   @SuppressFBWarnings("DMI_RANDOM_USED_ONLY_ONCE")
   public ResponseEntity<Object> hello() {
-    Random random = new Random();
+    final Random random = new Random();
     if (random.nextDouble() > 0.5) {
-      NominatimPlace place = new NominatimPlace();
       return
         ResponseEntity
           .status(HttpStatus.OK)
           .body("qw");
-
     } else {
-      RestApiError error = new RestApiError();
       return
         ResponseEntity
           .status(HttpStatus.NOT_FOUND)
